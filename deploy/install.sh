@@ -16,6 +16,7 @@ set -euo pipefail
 : "${DOMAIN:?Укажите DOMAIN=ваш.домен}"
 REPO="${REPO:-https://github.com/bcaun/chuckers.git}"
 BRANCH="${BRANCH:-main}"
+PORT_SET_BY_USER="${PORT:-}"
 PORT="${PORT:-8080}"
 APP_DIR=/opt/chuckers
 DATA_DIR=/var/lib/chuckers
@@ -31,10 +32,18 @@ echo "==> Веб-сервер: $PROXY"
 # Порт из уже существующих настроек важнее переданного
 if [ -f "$ENV_FILE" ]; then
   PORT="$(grep -E '^PORT=' "$ENV_FILE" | cut -d= -f2 || echo "$PORT")"
+  PORT_SET_BY_USER=1
 fi
-if ss -ltnH "sport = :$PORT" | grep -q . && ! systemctl is-active -q chuckers; then
-  echo "Порт $PORT уже занят другой программой. Запустите с другим портом, например PORT=8090"
-  exit 1
+port_busy() { ss -ltnH "sport = :$1" | grep -q .; }
+if port_busy "$PORT" && ! systemctl is-active -q chuckers; then
+  if [ -n "${PORT_SET_BY_USER:-}" ]; then
+    echo "Порт $PORT уже занят другой программой. Укажите другой, например PORT=8100"
+    exit 1
+  fi
+  # порт не задавали — подбираем первый свободный
+  for p in $(seq 8080 8199); do port_busy "$p" || { PORT=$p; break; }; done
+  port_busy "$PORT" && { echo "Не нашёл свободный порт в 8080–8199, укажите PORT=..."; exit 1; }
+  echo "==> Порт 8080 занят, использую свободный $PORT"
 fi
 
 echo "==> Пакеты"

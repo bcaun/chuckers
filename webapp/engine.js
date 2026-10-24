@@ -141,6 +141,89 @@
     return n;
   }
 
+  const QUIET_LIMIT = 30; // 15 ходов каждой стороны только дамками без взятий — ничья
+
+  // Партия: история, проверка ходов, определение итога.
+  // Используется и в клиенте, и на сервере (проверка онлайн-ходов и партий с ботом).
+  class Game {
+    constructor() {
+      this.board = initialBoard();
+      this.turn = WHITE;
+      this.quiet = 0;
+      this.last = null;
+      this.history = []; // снимки до каждого хода — для отмены
+      this.log = [];     // ходы в виде [from, ...path]
+      this.keys = [this.key()];
+      this.result = null; // WHITE | BLACK | 0 (ничья) | null (идёт)
+      this.reason = '';
+      this.moves = legalMoves(this.board, this.turn);
+    }
+
+    key() { return this.board.join('') + this.turn; }
+
+    // Найти легальный ход по полям [from, ...path]
+    find(squares) {
+      const [from, ...path] = squares;
+      return this.moves.find((m) => m.from === from && m.path.length === path.length &&
+        m.path.every((sq, k) => sq === path[k])) || null;
+    }
+
+    play(m) {
+      if (this.result !== null) throw new Error('game over');
+      const wasKing = isKing(this.board[m.from]);
+      this.history.push({ board: this.board, turn: this.turn, quiet: this.quiet, last: this.last });
+      this.board = applyMove(this.board, m);
+      this.quiet = wasKing && !m.caps.length ? this.quiet + 1 : 0;
+      this.last = m;
+      this.turn = -this.turn;
+      this.log.push([m.from, ...m.path]);
+      this.keys.push(this.key());
+      this.moves = legalMoves(this.board, this.turn);
+      this.checkEnd();
+      return m;
+    }
+
+    // Сыграть ход по полям; вернёт null, если ход нелегален.
+    playSquares(squares) {
+      const m = this.result === null ? this.find(squares) : null;
+      return m ? this.play(m) : null;
+    }
+
+    undo(n = 1) {
+      for (let k = 0; k < n && this.history.length; k++) {
+        const s = this.history.pop();
+        this.board = s.board; this.turn = s.turn; this.quiet = s.quiet; this.last = s.last;
+        this.log.pop();
+        this.keys.pop();
+      }
+      this.result = null;
+      this.reason = '';
+      this.moves = legalMoves(this.board, this.turn);
+    }
+
+    checkEnd() {
+      if (!this.moves.length) {
+        const n = countPieces(this.board);
+        this.result = -this.turn;
+        this.reason = (this.turn === WHITE ? n.white : n.black) ? 'Ходов не осталось' : 'Все шашки сбиты';
+      } else if (this.quiet >= QUIET_LIMIT) {
+        this.result = 0; this.reason = '15 ходов дамками без взятий';
+      } else {
+        const k = this.keys[this.keys.length - 1];
+        if (this.keys.filter((x) => x === k).length >= 3) { this.result = 0; this.reason = 'Позиция повторилась трижды'; }
+      }
+    }
+
+    resign(color) { this.result = -color; this.reason = 'Соперник сдался'; }
+    agreeDraw() { this.result = 0; this.reason = 'Ничья по соглашению'; }
+
+    static replay(log) {
+      const g = new Game();
+      for (const sq of log) if (!g.playSquares(sq)) return null;
+      return g;
+    }
+  }
+
   const SQUARE_NAMES = 'abcdefgh';
   const squareName = (i) => SQUARE_NAMES[i & 7] + (8 - (i >> 3));
   const moveNotation = (m) =>
@@ -148,6 +231,6 @@
 
   global.Checkers = {
     WHITE, BLACK, sideOf, isKing,
-    initialBoard, legalMoves, applyMove, countPieces, squareName, moveNotation,
+    initialBoard, legalMoves, applyMove, countPieces, squareName, moveNotation, Game,
   };
 })(typeof window !== 'undefined' ? window : globalThis);

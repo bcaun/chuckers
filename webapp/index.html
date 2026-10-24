@@ -10,38 +10,36 @@
 <body>
   <!-- Меню -->
   <section id="menu" class="screen active">
+    <button id="me-chip" class="me-chip">
+      <span class="avatar" id="me-avatar"></span>
+      <span class="me-text"><b id="me-name">…</b><small id="me-sub">Профиль и статистика</small></span>
+      <span class="chev">›</span>
+    </button>
+
     <div class="logo">
       <div class="logo-pieces"><span class="lp white"></span><span class="lp black"></span></div>
       <h1>Шашки</h1>
       <p class="hint">Русские правила</p>
     </div>
 
-    <div class="card">
-      <div class="label">Режим</div>
-      <div class="seg" data-name="mode">
-        <button data-value="bot" class="on">С ботом</button>
-        <button data-value="local">Вдвоём</button>
-      </div>
-
-      <div class="bot-only">
-        <div class="label">Сложность</div>
-        <div class="seg" data-name="level">
-          <button data-value="1">Лёгкий</button>
-          <button data-value="2" class="on">Средний</button>
-          <button data-value="3">Сложный</button>
-        </div>
-
-        <div class="label">Играю за</div>
-        <div class="seg" data-name="color">
-          <button data-value="1" class="on">Белых</button>
-          <button data-value="-1">Чёрных</button>
-        </div>
-      </div>
+    <div class="menu-list">
+      <button class="menu-item" data-go="bot">
+        <span class="mi-icon">🤖</span>
+        <span class="mi-text"><b>Играть с ботом</b><small id="menu-bot-sub">5 уровней сложности</small></span>
+      </button>
+      <button class="menu-item" id="play-friend">
+        <span class="mi-icon">👥</span>
+        <span class="mi-text"><b>Играть с другом</b><small>Отправьте приглашение в Telegram</small></span>
+      </button>
+      <button class="menu-item" id="play-local">
+        <span class="mi-icon">📱</span>
+        <span class="mi-text"><b>Вдвоём на одном телефоне</b><small>Передавайте устройство по очереди</small></span>
+      </button>
+      <button class="menu-item" data-go="shop">
+        <span class="mi-icon">⭐</span>
+        <span class="mi-text"><b>Магазин</b><small>Уровни, отмена хода, цвета шашек</small></span>
+      </button>
     </div>
-
-    <button id="start" class="primary">Начать игру</button>
-
-    <div id="stats" class="stats"></div>
 
     <details class="rules">
       <summary>Правила</summary>
@@ -56,11 +54,41 @@
     </details>
   </section>
 
+  <!-- Выбор уровня бота -->
+  <section id="bot" class="screen">
+    <h2 class="screen-title">Игра с ботом</h2>
+    <p class="hint">5 побед на открытом уровне открывают следующий.</p>
+    <div id="levels" class="levels"></div>
+    <div class="card">
+      <div class="label">Играю за</div>
+      <div class="seg" id="bot-color">
+        <button data-value="1">Белых</button>
+        <button data-value="-1">Чёрных</button>
+      </div>
+    </div>
+    <button id="bot-start" class="primary">Начать игру</button>
+  </section>
+
+  <!-- Ожидание друга -->
+  <section id="lobby" class="screen">
+    <h2 class="screen-title">Игра с другом</h2>
+    <div class="versus">
+      <div class="vs-player"><span class="avatar big" id="lobby-me"></span><b id="lobby-me-name"></b></div>
+      <span class="vs">VS</span>
+      <div class="vs-player"><span class="avatar big empty pulse">?</span><b>Друг</b></div>
+    </div>
+    <p class="hint center" id="lobby-text">Отправьте приглашение. Партия начнётся, как только друг откроет ссылку.</p>
+    <button id="lobby-invite" class="primary">Пригласить друга</button>
+    <button id="lobby-copy">Скопировать ссылку</button>
+    <button id="lobby-cancel" class="ghost">Отмена</button>
+  </section>
+
   <!-- Игра -->
   <section id="game" class="screen">
-    <div class="player top">
+    <div class="player top" id="p-top">
+      <span class="avatar" id="top-avatar"></span>
+      <span class="p-name"><b id="top-name"></b><small id="top-sub"></small></span>
       <span class="dot" id="top-dot"></span>
-      <span id="top-name">Бот</span>
       <span class="taken" id="top-taken"></span>
     </div>
 
@@ -71,19 +99,58 @@
       </div>
     </div>
 
-    <div class="player bottom">
+    <div class="player bottom" id="p-bottom">
+      <span class="avatar" id="bottom-avatar"></span>
+      <span class="p-name"><b id="bottom-name"></b><small id="bottom-sub"></small></span>
       <span class="dot" id="bottom-dot"></span>
-      <span id="bottom-name">Вы</span>
       <span class="taken" id="bottom-taken"></span>
     </div>
 
     <div id="status" class="status"></div>
 
-    <div class="controls">
-      <button id="undo">↶ Отменить</button>
-      <button id="restart">⟳ Заново</button>
-      <button id="to-menu">☰ Меню</button>
+    <div id="draw-banner" class="banner hidden">
+      <span>Соперник предлагает ничью</span>
+      <button id="draw-yes">Принять</button>
+      <button id="draw-no" class="ghost">Нет</button>
     </div>
+
+    <div class="controls" id="controls"></div>
+  </section>
+
+  <!-- Профиль и статистика -->
+  <section id="profile" class="screen">
+    <div class="profile-head">
+      <span class="avatar huge" id="pf-avatar"></span>
+      <h2 id="pf-name"></h2>
+    </div>
+
+    <div class="card">
+      <div class="label">Аватар</div>
+      <div class="emoji-grid" id="emoji-grid"></div>
+      <div class="row">
+        <label class="btn-like" for="photo-input">📷 Загрузить фото</label>
+        <input type="file" id="photo-input" accept="image/*" hidden>
+        <button id="tg-photo" class="hidden">Фото из Telegram</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="label-row"><span class="label">Цвета шашек</span><span id="colors-lock" class="lock-note"></span></div>
+      <div class="color-preview" id="color-preview"></div>
+      <div class="label small">Мои шашки</div>
+      <div class="swatches" id="sw-mine"></div>
+      <div class="label small">Шашки соперника</div>
+      <div class="swatches" id="sw-theirs"></div>
+    </div>
+
+    <div class="card" id="stats-card"></div>
+  </section>
+
+  <!-- Магазин -->
+  <section id="shop" class="screen">
+    <h2 class="screen-title">Магазин</h2>
+    <p class="hint">Оплата звёздами Telegram. Покупки сохраняются навсегда.</p>
+    <div id="shop-list" class="shop-list"></div>
   </section>
 
   <!-- Итог партии -->
@@ -92,13 +159,17 @@
       <div id="modal-emoji" class="modal-emoji"></div>
       <h2 id="modal-title"></h2>
       <p id="modal-text" class="hint"></p>
-      <button id="again" class="primary">Ещё партию</button>
-      <button id="modal-menu">В меню</button>
+      <div id="modal-progress" class="progress hidden"><div class="bar"><i></i></div><small></small></div>
+      <div id="modal-actions" class="modal-actions"></div>
     </div>
   </div>
 
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="shared.js"></script>
   <script src="engine.js"></script>
   <script src="ai.js"></script>
+  <script src="api.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

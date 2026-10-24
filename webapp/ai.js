@@ -5,10 +5,13 @@
   const E = global.Checkers;
 
   const WIN = 100000;
+  // blunder — вероятность сыграть случайный ход (чтобы младшие уровни ошибались)
   const LEVELS = {
-    1: { depth: 2, timeMs: 150, blunder: 0.35 },
-    2: { depth: 5, timeMs: 500, blunder: 0.05 },
-    3: { depth: 14, timeMs: 1500, blunder: 0 },
+    1: { depth: 1, timeMs: 100, blunder: 0.5 },
+    2: { depth: 2, timeMs: 200, blunder: 0.25 },
+    3: { depth: 4, timeMs: 400, blunder: 0.1 },
+    4: { depth: 7, timeMs: 900, blunder: 0.02 },
+    5: { depth: 16, timeMs: 2000, blunder: 0 },
   };
 
   // Оценка с точки зрения белых.
@@ -32,7 +35,7 @@
   class Timeout extends Error {}
 
   function search(board, color, level) {
-    const cfg = LEVELS[level] || LEVELS[2];
+    const cfg = LEVELS[level] || LEVELS[1];
     const deadline = Date.now() + cfg.timeMs;
     let nodes = 0;
 

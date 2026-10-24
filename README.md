@@ -2,6 +2,9 @@
 
 Русские шашки в Telegram: бот с 5 уровнями, игра с другом по приглашению, статистика, покупки за Telegram Stars.
 
+- 📖 [Подробное описание игры](docs/GAME.md)
+- 🚀 [Развёртывание на своём VPS](docs/DEPLOY.md)
+
 ## Возможности
 - **Правила русских шашек**: обязательное взятие, бой назад, «дальнобойные» дамки,
   превращение в дамку посреди взятия, запрет «турецкого удара», ничья по повтору позиции и 15 ходам дамками.
@@ -51,20 +54,11 @@ npm run dev            # DEV=1: вход без Telegram, покупки выд�
 ```
 
 ## Запуск в Telegram
-1. В [@BotFather](https://t.me/BotFather): `/newbot` → токен. `/newapp` → указать URL сервера,
-   short name, например `checkers`. Платежи в звёздах дополнительно подключать не нужно.
-2. Развернуть сервер с HTTPS (VPS + Caddy/nginx, Render, Railway, Fly.io…). Нужен один процесс
-   и постоянный диск для `server/data`:
-   ```bash
-   BOT_TOKEN=123:ABC \
-   WEBAPP_URL=https://checkers.example.com \
-   APP_SHORT_NAME=checkers \
-   PORT=8080 node server/index.js
-   ```
-   Прокси должен пропускать WebSocket (`/ws`).
-3. Открыть бота, нажать «Играть».
+Пошаговая инструкция для своего VPS (одна команда установки, HTTPS через Caddy, systemd, бэкапы):
+[docs/DEPLOY.md](docs/DEPLOY.md). Файлы для сервера лежат в [`deploy/`](deploy/).
 
-Переменные: `BOT_TOKEN`, `WEBAPP_URL`, `APP_SHORT_NAME`, `PORT`, `DATA_DIR`, `DEV`.
+Переменные окружения: `BOT_TOKEN`, `WEBAPP_URL`, `APP_SHORT_NAME`, `HOST`, `PORT`, `DATA_DIR`, `DEV`
+(описание — в [`deploy/env.example`](deploy/env.example)).
 
 ## Ограничения и что дальше
 - Хранилище — JSON-файл: хватит на тысячи игроков; для большего — заменить `db.js` на SQLite/Postgres.

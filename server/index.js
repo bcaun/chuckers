@@ -181,7 +181,7 @@ setInterval(() => {
   }
 }, 30000).unref();
 
-server.listen(config.PORT, () => {
+server.listen(config.PORT, config.HOST, () => {
   console.log(`Шашки: http://localhost:${config.PORT}${config.DEV ? ' (DEV)' : ''}`);
   telegram.start().catch((e) => console.error('Бот не запустился:', e.message));
 });

@@ -1,0 +1,6 @@
+# Caddy сам получает и продлевает сертификат Let's Encrypt
+# и проксирует WebSocket без дополнительных настроек.
+{$DOMAIN} {
+	encode gzip
+	reverse_proxy 127.0.0.1:8080
+}

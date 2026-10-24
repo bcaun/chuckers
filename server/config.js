@@ -2,6 +2,8 @@ const path = require('path');
 
 module.exports = {
   PORT: Number(process.env.PORT) || 8080,
+  // На VPS за обратным прокси ставим 127.0.0.1, чтобы порт не торчал наружу.
+  HOST: process.env.HOST || '0.0.0.0',
   // Токен бота от @BotFather. Без него не работают авторизация через Telegram и платежи.
   BOT_TOKEN: process.env.BOT_TOKEN || '',
   // short_name мини-аппа из /newapp — для ссылок-приглашений вида t.me/<bot>/<app>?startapp=...

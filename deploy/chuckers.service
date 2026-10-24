@@ -1,0 +1,27 @@
+[Unit]
+Description=Chuckers — Telegram Mini App «Шашки»
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=chuckers
+Group=chuckers
+WorkingDirectory=/opt/chuckers/server
+EnvironmentFile=/etc/chuckers.env
+ExecStart=/usr/bin/node index.js
+Restart=always
+RestartSec=3
+# При остановке сервер сохраняет базу на диск (обработчик SIGTERM)
+KillSignal=SIGTERM
+TimeoutStopSec=15
+
+# Ограничения безопасности: писать можно только в каталог данных
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/var/lib/chuckers
+
+[Install]
+WantedBy=multi-user.target
